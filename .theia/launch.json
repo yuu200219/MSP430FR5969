@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "motor_control",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "motor_control",
+                "resourceId": "/motor_control"
+            }
+        }
+    ]
+}
