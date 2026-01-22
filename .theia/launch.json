@@ -9,6 +9,15 @@
                 "name": "motor_control",
                 "resourceId": "/motor_control"
             }
+        },
+        {
+            "name": "RelayProject",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "RelayProject",
+                "resourceId": "/RelayProject"
+            }
         }
     ]
 }
