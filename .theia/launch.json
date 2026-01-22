@@ -11,12 +11,12 @@
             }
         },
         {
-            "name": "RelayProject",
+            "name": "relay_control",
             "type": "ccs-debug",
             "request": "launch",
             "projectInfo": {
-                "name": "RelayProject",
-                "resourceId": "/RelayProject"
+                "name": "relay_control",
+                "resourceId": "/relay_control"
             }
         }
     ]
