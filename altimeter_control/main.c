@@ -34,6 +34,8 @@ uint16_t fram_initialized = 0; // 用來存 Magic Number，例如 0xABCD
 // --- 全域變數 ---
 volatile uint8_t timer_triggered = 0;
 volatile uint16_t global_tick = 0;
+float ground_alt = 0;
+static uint8_t motor_action_done = 0; 
 
 // --- 函式宣告 ---
 void check_fram_integrity(void);
@@ -41,6 +43,7 @@ void system_init(void);
 void ms5607_reset(void);
 void ms5607_read_prom(void);
 uint32_t ms5607_get_raw(uint8_t conv_cmd);
+float calculate_only_msl(uint32_t D1, uint32_t D2);
 void calculate_and_log(uint32_t D1, uint32_t D2);
 void export_data(void);
 void UART_print(char* s);
@@ -55,17 +58,43 @@ void main(void) {
     
     system_init();
     check_fram_integrity();
-    write_index = 0;
+    // write_index = 0;
     // 2. 啟動 Timer_A (10ms 中斷, SMCLK=8MHz)
     Timer_A_initUpModeParam timerParam = {0};
-    timerParam.clockSource = TIMER_A_CLOCKSOURCE_SMCLK;
+    timerParam.clockSource = TIMER_A_CLOCKSOURCE_SMCLK; // SMCLK = 8MHz
     // 修正：使用除以 8 分頻器，讓計數基準變成 1MHz
-    timerParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_64;
-    timerParam.timerPeriod = 12500; // 1,000,000 / 100Hz = 10,000
+    timerParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_64; // 分頻器 = 64
+    // timerParam.timerPeriod = 12500; // 週期計數值
+    timerParam.timerPeriod = 25000; // 200ms 存取一次資料
     timerParam.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
     timerParam.timerClear = TIMER_A_DO_CLEAR;
     timerParam.startTimer = true;
     Timer_A_initUpMode(TIMER_A0_BASE, &timerParam);
+
+    // current tick rate: 8,000,000 Hz / 64 = 125,000 Hz (每 125,000 跳動一次)
+    // 觸發 interrupt 時間: 12500 / 125,000 = 0.1 sec
+
+    // 流程
+    // 1. 每 100 ms: Timer_A 倒數結束，觸發中斷
+    // 2. 喚醒 CPU: 中斷服務程式(Timer_A0_ISR) 將 timer_triggered 設為 1，並把 CPU 從 LPM0 mode 喚醒
+    // 3. sampling
+    //      - 呼叫 ms5607_get_raw。裡面包含 __delay_cycles(24000)，在 8MHz 下這大約是 3ms。
+    //      - 你讀取了 D1 (壓力) 和 D2 (溫度)，所以總共會卡死大約 6ms 在等待感測器
+    // 4. 計算與寫入 FRAM
+    //      - calculate_and_log 進行浮點數運算
+    //      - 將結果存入 altimeter_log[write_index]（這是寫入 FRAM）
+    // 5. UART 傳輸
+    //      - 呼叫 UART_print(buf)
+    //      - 你的 buf 長度大約 40~50 字元。在 115200 波特率下，傳輸一個字元約 0.086ms
+    //      - 傳完這串字串大約花費 4ms
+    // 總結 3.-5.: CPU 會空出 10ms (6ms sampling wait + 4ms tranfer latency) 剩下 90ms 在省電睡覺
+
+    // TODO
+    // 1. 調整成 200ms 存一次資料
+    //      - 更改 timerPeriod = 25000？
+    // 2. 目前是透過 UART 來顯示結果 之後需要使用 DMA 來處理字串將字串寫入到 SD card, CPU 可以繼續採樣
+    // 3. 會多設計一個 main loop，sampling 資料都會存在 circular buffer 中 ，當中斷處理程序完成後 (sampling 資料寫入到 buf)，就會跑 main loop 裡面 SD card write
+    // 4. 安裝 MicroSD connector 建議安裝電容，讀寫的時候會有 100-200mA 怕會燒掉板子
 
     __enable_interrupt();
     
@@ -73,6 +102,28 @@ void main(void) {
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN6); // LED1 red
     // UART_print("MSP430 Wake Up!\r\n"); // 測試 UART
     
+    // 進入 while 迴圈之前 先校正高度 之後吐出的高度會是 related altitude
+    UART_print("Calibrating Ground...\r\n");
+    
+    float sum_alt = 0;
+    char calibration_buf[64];
+    int i;
+    // char cur_alt_buf[64];
+    for(i = 0; i<10; i++) {
+        // float cur_alt;
+        uint32_t d1 = ms5607_get_raw(CMD_CONV_D1);
+        uint32_t d2 = ms5607_get_raw(CMD_CONV_D2);
+        sum_alt += calculate_only_msl(d1, d2);
+        // sprintf(cur_alt_buf, "%.2f m\r\n", (double)cur_alt);
+        // sum_alt += cur_alt; // 只算海平面高度的函式
+
+        __delay_cycles(80000);
+    }
+    ground_alt = sum_alt/10.0f;
+    sprintf(calibration_buf, "Current Altitude: %.2f m\r\n", (double)ground_alt);
+    UART_print(calibration_buf); 
+    __delay_cycles(80000);
+
     while (1) {
         // UART_print("Alive\r\n");
         // 進入 LPM0 睡眠，等待計時器喚醒
@@ -86,6 +137,28 @@ void main(void) {
             uint32_t D2 = ms5607_get_raw(CMD_CONV_D2);
             
             calculate_and_log(D1, D2);
+            
+            uint16_t current_idx = (write_index == 0) ? 99 : (write_index - 1);
+            double rel_alt = (double)altimeter_log[current_idx].altitude - (double)ground_alt;
+            if (rel_alt >= 5) { // 上升到 205 才啟動正轉
+                GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN2); 
+                // motor_action_done = 1;
+            }
+            else if (rel_alt <= 0) { // 下降到 195 以下才啟動反轉
+                GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN2); 
+            }
+            // 3. 用 current_idx 來印資料
+            char buf[128];
+            sprintf(buf, "%lu, %.2f, %.2f, %.2f, %u\r\n", 
+                (unsigned long)altimeter_log[current_idx].timestamp,
+                (double)altimeter_log[current_idx].pressure,
+                (double)altimeter_log[current_idx].altitude,
+                rel_alt,
+                (unsigned int)altimeter_log[current_idx].temperature);
+            
+            UART_print(buf);
+            
+            UART_print(buf);
             GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN6);
             if(write_index >= 100)
                 write_index = 0;
@@ -194,7 +267,8 @@ void system_init() {
     EUSCI_B_SPI_initMasterParam spiParam = {0};
     spiParam.selectClockSource = EUSCI_B_SPI_CLOCKSOURCE_SMCLK;
     spiParam.clockSourceFrequency = 8000000;
-    spiParam.desiredSpiClock = 1000000; // 1MHz
+    // spiParam.desiredSpiClock = 1000000; // 1MHz
+    spiParam.desiredSpiClock = 100000;
     spiParam.msbFirst = EUSCI_B_SPI_MSB_FIRST;
     // spiParam.clockPhase = EUSCI_B_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT;
     spiParam.clockPhase = EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT;
@@ -203,6 +277,10 @@ void system_init() {
     EUSCI_B_SPI_initMaster(EUSCI_B0_BASE, &spiParam);
     EUSCI_B_SPI_enable(EUSCI_B0_BASE);
     UART_print("--- SPI INIT FINISHED ---\r\n");
+    
+    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN2);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN2);
+    UART_print("--- RELAYER INIT FINISHED ---\r\n");
 }
 
 // --- MS5607 通訊底層 ---
@@ -253,13 +331,79 @@ void ms5607_reset() {
 }
 
 // --- 數據運算與寫入 ---
-void calculate_and_log(uint32_t D1, uint32_t D2) {
-    // 1. 溫度與壓力運算 (簡化公式，實際請帶入 MS5607 標準二階補償)
+float calculate_only_msl(uint32_t D1, uint32_t D2) {
+    // 1. 溫度與壓力運算, MS5607 標準二階補償
+    // refernece: https://www.cdiweb.com/datasheets/te/eng_ds_ms5607-02ba03_b.pdf (p.8 - p.9)
     int32_t dT = D2 - ((int32_t)ms5607_coeffs[5] << 8);
     int32_t TEMP = 2000 + (((int64_t)dT * ms5607_coeffs[6]) >> 23);
-    int64_t OFF = ((int64_t)ms5607_coeffs[2] << 17) + (((int64_t)ms5607_coeffs[4] * dT) >> 6);
-    int64_t SENS = ((int64_t)ms5607_coeffs[1] << 16) + (((int64_t)ms5607_coeffs[3] * dT) >> 7);
-    int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
+    int64_t OFF = ((int64_t)ms5607_coeffs[2] << 17) + (((int64_t)ms5607_coeffs[4] * (int64_t)dT) >> 6);
+    int64_t SENS = ((int64_t)ms5607_coeffs[1] << 16) + (((int64_t)ms5607_coeffs[3] * (int64_t)dT) >> 7);
+    
+    // 二階補償 for P
+    int64_t T2 = 0, OFF2 = 0, SENS2 = 0;
+    
+    if (TEMP < 2000) { // 如果溫度低於 20°C
+        T2 = ((int64_t)dT * (int64_t)dT) >> 31;
+        int64_t temp_diff = (int64_t)TEMP - 2000;
+        OFF2 = 61 * (temp_diff * temp_diff) >> 4;
+        SENS2 = 2 * (temp_diff * temp_diff);
+        
+        if (TEMP < -1500) { // 如果低於 -15°C (火箭高空可能遇到)
+            int64_t temp_diff_low = (int64_t)TEMP + 1500;
+            OFF2 += 15 * (temp_diff_low * temp_diff_low);
+            SENS2 += 8 * (temp_diff_low * temp_diff_low);
+        }
+    }
+
+    TEMP -= (int32_t)T2;
+    OFF -= OFF2;
+    SENS -= SENS2;
+
+    int64_t P_64 = (((int64_t)D1 * SENS) >> 21) - OFF;
+    int32_t P = (int32_t)(P_64 >> 15); // 最後才把結果轉回 32 位元
+    
+    // 無二階補償 for P
+    // int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
+
+    float pressure_hpa = P / 100.0f;
+    float altitude = 44330.0f * (1.0f - powf(pressure_hpa / 1013.25f, 0.190295f));
+
+    return altitude;
+}
+
+void calculate_and_log(uint32_t D1, uint32_t D2) {
+    // 1. 溫度與壓力運算, MS5607 標準二階補償
+    // refernece: https://www.cdiweb.com/datasheets/te/eng_ds_ms5607-02ba03_b.pdf (p.8 - p.9)
+    int32_t dT = D2 - ((int32_t)ms5607_coeffs[5] << 8);
+    int32_t TEMP = 2000 + (((int64_t)dT * ms5607_coeffs[6]) >> 23);
+    int64_t OFF = ((int64_t)ms5607_coeffs[2] << 17) + (((int64_t)ms5607_coeffs[4] * (int64_t)dT) >> 6);
+    int64_t SENS = ((int64_t)ms5607_coeffs[1] << 16) + (((int64_t)ms5607_coeffs[3] * (int64_t)dT) >> 7);
+    
+    // 二階補償 for P
+    int64_t T2 = 0, OFF2 = 0, SENS2 = 0;
+    
+    if (TEMP < 2000) { // 如果溫度低於 20°C
+        T2 = ((int64_t)dT * (int64_t)dT) >> 31;
+        int64_t temp_diff = (int64_t)TEMP - 2000;
+        OFF2 = 61 * (temp_diff * temp_diff) >> 4;
+        SENS2 = 2 * (temp_diff * temp_diff);
+        
+        if (TEMP < -1500) { // 如果低於 -15°C (火箭高空可能遇到)
+            int64_t temp_diff_low = (int64_t)TEMP + 1500;
+            OFF2 += 15 * (temp_diff_low * temp_diff_low);
+            SENS2 += 8 * (temp_diff_low * temp_diff_low);
+        }
+    }
+
+    TEMP -= (int32_t)T2;
+    OFF -= OFF2;
+    SENS -= SENS2;
+
+    int64_t P_64 = (((int64_t)D1 * SENS) >> 21) - OFF;
+    int32_t P = (int32_t)(P_64 >> 15); // 最後才把結果轉回 32 位元
+    
+    // 無二階補償 for P
+    // int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
 
     float pressure_hpa = P / 100.0f;
     float altitude = 44330.0f * (1.0f - powf(pressure_hpa / 1013.25f, 0.190295f));
@@ -270,13 +414,14 @@ void calculate_and_log(uint32_t D1, uint32_t D2) {
     altimeter_log[write_index].altitude = altitude;
     altimeter_log[write_index].temperature = (uint16_t)TEMP;
 
-    char buf[64];
-    sprintf(buf, "%lu,%.2f,%.2f,%u\r\n", 
-            (unsigned long)global_tick, // 強制轉換為 unsigned long 以匹配 %lu
-            (double)pressure_hpa,       // sprintf 處理 float 時實際上是轉為 double 傳遞
-            (double)altitude,           // 同上
-            (unsigned int)TEMP);
-    UART_print(buf);
+    // char buf[100];
+    // sprintf(buf, "%lu,%.2f,%.2f,%u\r\n", 
+    //         (unsigned long)global_tick, // 強制轉換為 unsigned long 以匹配 %lu
+    //         (double)pressure_hpa,       // sprintf 處理 float 時實際上是轉為 double 傳遞
+    //         (double)altitude,           // 同上
+    //         (unsigned int)TEMP);
+    // // sprintf(buf, "D1:%lu, C1:%u, C2:%u, C3:%u, C4:%u, C5:%u, C6:%u\r\n", (uint32_t)D1, ms5607_coeffs[1], ms5607_coeffs[2], ms5607_coeffs[3], ms5607_coeffs[4], ms5607_coeffs[5], ms5607_coeffs[6]);
+    // UART_print(buf);
     write_index++;
 }
 
@@ -307,7 +452,6 @@ void export_data(void) {
                 altimeter_log[i].pressure,
                 altimeter_log[i].altitude,
                 altimeter_log[i].temperature);
-        
         UART_print(buf);
     }
     
