@@ -1,182 +1,202 @@
 [
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/diskio.c"
+   },
+   {
+      "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ff.c"
+   },
+   {
+      "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ffsystem.c"
+   },
+   {
+      "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ffunicode.c"
+   },
+   {
+      "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/adc12_b.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/aes256.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/comp_e.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/crc.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/crc32.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/cs.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/dma.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/esi.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/eusci_a_spi.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/eusci_a_uart.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/eusci_b_i2c.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/eusci_b_spi.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/framctl.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/framctl_a.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/gpio.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/hspll.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/lcd_c.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/mpu.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/mpy32.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/mtif.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/pmm.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/ram.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/ref_a.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/rtc_b.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/rtc_c.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/saph.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/saph_a.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/sdhs.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/sfr.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/sysctl.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/timer_a.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/timer_b.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/tlv.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/uups.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx/wdt_a.c"
    },
    {
       "directory" : "/Users/yuu/workspace_ccstheia/altimeter_control/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2040/ccs/ccs_base/msp430/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/driverlib/MSP430FR5xx_6xx\" -I\"/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -I\"/Users/yuu/workspace_ccstheia/altimeter_control/FatFs\" -D__MSP430FR5969__ -D_MPU_ENABLE -DDEPRECATED -xc",
       "file"      : "/Users/yuu/workspace_ccstheia/altimeter_control/main.c"
    }
 ]

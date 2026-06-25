@@ -2,13 +2,18 @@
 #include <msp430.h>
 #include <math.h>
 #include <stdio.h>
+#include "ff.h"
+#include "diskio.h"
+#include <string.h>
 
 // --- MS5607 指令集 ---
 #define CMD_RESET       0x1E
 #define CMD_ADC_READ    0x00
 #define CMD_PROM_RD     0xA0
-#define CMD_CONV_D1     0x44 // OSR 1024 (Pressure)
-#define CMD_CONV_D2     0x54 // OSR 1024 (Temperature)
+// #define CMD_CONV_D1     0x44 // OSR 1024 (Pressure)
+// #define CMD_CONV_D2     0x54 // OSR 1024 (Temperature)
+#define CMD_CONV_D1     0x48 // OSR 4096 (Pressure)
+#define CMD_CONV_D2     0x58 // OSR 4096 (Temperature)
 
 // --- 資料結構 ---
 typedef struct {
@@ -32,11 +37,45 @@ uint16_t ms5607_coeffs[7] = {0}; // 校準係數
 uint16_t fram_initialized = 0; // 用來存 Magic Number，例如 0xABCD
 
 // --- 全域變數 ---
+#define SD_WRT_BUFFER_SIZE 10 // 10 data = 1 sec
+
+LogEntry Buffer_A[SD_WRT_BUFFER_SIZE];
+LogEntry Buffer_B[SD_WRT_BUFFER_SIZE];
+
+volatile uint8_t active_buffer = 0;  // 0 代表正在寫 A，1 代表正在寫 B
+volatile uint8_t buffer_index = 0;   // 目前寫到第幾個
+volatile uint8_t sd_write_flag = 0;  // 觸發 SD 卡儲存的旗標
+
+volatile uint8_t rocket_launched = 1;
 volatile uint8_t timer_triggered = 0;
-volatile uint16_t global_tick = 0;
+volatile uint32_t global_tick = 0;
+volatile uint8_t space_bar_timeout = 0; // 0 = off, >0 = relayer on countdown
+volatile uint8_t in_repeat_mode = 0;    // Tracks if we are in auto-repeat
+
+volatile uint8_t motor_triggered = 0;
+
+#define SPEED_WINDOW 5
+double speed_history[SPEED_WINDOW] = {0.0};
+uint8_t speed_idx = 0;
+uint8_t speed_count = 0;
+double filtered_speed = 0.0;
+
+#define PRESSURE_WINDOW 4
+float pressure_history[4] = {0.0};
+int8_t pressure_idx = 0;
+
+#define ALT_WINDOW 10
+float alt_history[10] = {0.0};
+int8_t alt_idx = 0;
+
 float ground_alt = 0;
 static uint8_t motor_action_done = 0; 
+EUSCI_A_SPI_initMasterParam paramA1 = {0};
 
+FATFS g_fs; // 定義一個全域的 FatFs 物件
+FRESULT g_res; // 儲存掛載結果
+FIL g_file; // 檔案物件
+UINT bytes_written; // 用來記錄實際寫入了幾個 Byte 
 // --- 函式宣告 ---
 void check_fram_integrity(void);
 void system_init(void);
@@ -45,8 +84,9 @@ void ms5607_read_prom(void);
 uint32_t ms5607_get_raw(uint8_t conv_cmd);
 float calculate_only_msl(uint32_t D1, uint32_t D2);
 void calculate_and_log(uint32_t D1, uint32_t D2);
-void export_data(void);
 void UART_print(char* s);
+float smooth_pressure(float pressure);
+bool altSampling(float alt);
 
 // --- 主程式 ---
 void main(void) {
@@ -58,18 +98,43 @@ void main(void) {
     
     system_init();
     check_fram_integrity();
+
+    // check sd card FatFs 掛載結果
+    
+    while(1) {
+        g_res = f_mount(&g_fs, "0:", 1); // 強制實體掛載
+        if (g_res == FR_OK) {
+            // SD 卡完全準備好了
+            // 既然開機握手已經成功，在這裡立刻將 eUSCI_A1 的時脈切換到 8MHz 高速！ 
+            paramA1.desiredSpiClock = 8000000; // 8000000 = 8MHz
+            EUSCI_A_SPI_initMaster(EUSCI_A1_BASE, &paramA1);
+            EUSCI_A_SPI_enable(EUSCI_A1_BASE);
+            UART_print("SD is ready!");
+            // 可以點亮板子上的綠色 LED (P1.0) 代表儲存系統正常
+
+            break;
+        } 
+        else {
+            // 依據 g_res 的錯誤碼進行排錯，並點亮紅色 LED (P4.6) 警告
+            // char err_buf[64];
+            // sprintf(err_buf, "SD Card Mount FAILED! Code: %d. Retrying...\r\n", g_res);
+            // UART_print(err_buf);
+            continue;
+        }
+    }
     // write_index = 0;
     // 2. 啟動 Timer_A (10ms 中斷, SMCLK=8MHz)
     Timer_A_initUpModeParam timerParam = {0};
     timerParam.clockSource = TIMER_A_CLOCKSOURCE_SMCLK; // SMCLK = 8MHz
     // 修正：使用除以 8 分頻器，讓計數基準變成 1MHz
     timerParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_64; // 分頻器 = 64
-    // timerParam.timerPeriod = 12500; // 週期計數值
-    timerParam.timerPeriod = 25000; // 200ms 存取一次資料
+    // Change to 20ms resolution for higher sensitivity (125kHz * 0.02s = 2500 counts)
+    timerParam.timerPeriod = 2500; 
     timerParam.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
     timerParam.timerClear = TIMER_A_DO_CLEAR;
     timerParam.startTimer = true;
     Timer_A_initUpMode(TIMER_A0_BASE, &timerParam);
+    
 
     // current tick rate: 8,000,000 Hz / 64 = 125,000 Hz (每 125,000 跳動一次)
     // 觸發 interrupt 時間: 12500 / 125,000 = 0.1 sec
@@ -89,13 +154,6 @@ void main(void) {
     //      - 傳完這串字串大約花費 4ms
     // 總結 3.-5.: CPU 會空出 10ms (6ms sampling wait + 4ms tranfer latency) 剩下 90ms 在省電睡覺
 
-    // TODO
-    // 1. 調整成 200ms 存一次資料
-    //      - 更改 timerPeriod = 25000？
-    // 2. 目前是透過 UART 來顯示結果 之後需要使用 DMA 來處理字串將字串寫入到 SD card, CPU 可以繼續採樣
-    // 3. 會多設計一個 main loop，sampling 資料都會存在 circular buffer 中 ，當中斷處理程序完成後 (sampling 資料寫入到 buf)，就會跑 main loop 裡面 SD card write
-    // 4. 安裝 MicroSD connector 建議安裝電容，讀寫的時候會有 100-200mA 怕會燒掉板子
-
     __enable_interrupt();
     
     GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0); // LED2 green
@@ -103,26 +161,7 @@ void main(void) {
     // UART_print("MSP430 Wake Up!\r\n"); // 測試 UART
     
     // 進入 while 迴圈之前 先校正高度 之後吐出的高度會是 related altitude
-    UART_print("Calibrating Ground...\r\n");
     
-    float sum_alt = 0;
-    char calibration_buf[64];
-    int i;
-    // char cur_alt_buf[64];
-    for(i = 0; i<10; i++) {
-        // float cur_alt;
-        uint32_t d1 = ms5607_get_raw(CMD_CONV_D1);
-        uint32_t d2 = ms5607_get_raw(CMD_CONV_D2);
-        sum_alt += calculate_only_msl(d1, d2);
-        // sprintf(cur_alt_buf, "%.2f m\r\n", (double)cur_alt);
-        // sum_alt += cur_alt; // 只算海平面高度的函式
-
-        __delay_cycles(80000);
-    }
-    ground_alt = sum_alt/10.0f;
-    sprintf(calibration_buf, "Current Altitude: %.2f m\r\n", (double)ground_alt);
-    UART_print(calibration_buf); 
-    __delay_cycles(80000);
 
     while (1) {
         // UART_print("Alive\r\n");
@@ -135,59 +174,118 @@ void main(void) {
             // 流程：讀取 -> 計算 -> 存檔
             uint32_t D1 = ms5607_get_raw(CMD_CONV_D1);
             uint32_t D2 = ms5607_get_raw(CMD_CONV_D2);
-            
-            calculate_and_log(D1, D2);
-            
-            uint16_t current_idx = (write_index == 0) ? 99 : (write_index - 1);
-            double rel_alt = (double)altimeter_log[current_idx].altitude - (double)ground_alt;
-            if (rel_alt >= 5) { // 上升到 205 才啟動正轉
-                GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN2); 
-                // motor_action_done = 1;
-            }
-            else if (rel_alt <= 0) { // 下降到 195 以下才啟動反轉
-                GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN2); 
-            }
-            // 3. 用 current_idx 來印資料
-            char buf[128];
-            sprintf(buf, "%lu, %.2f, %.2f, %.2f, %u\r\n", 
-                (unsigned long)altimeter_log[current_idx].timestamp,
-                (double)altimeter_log[current_idx].pressure,
-                (double)altimeter_log[current_idx].altitude,
-                rel_alt,
-                (unsigned int)altimeter_log[current_idx].temperature);
-            
-            UART_print(buf);
-            
-            UART_print(buf);
-            GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN6);
-            if(write_index >= 100)
-                write_index = 0;
-            // 檢查是否滿了
-            // if (write_index >= 100) {
-            //     // Timer_A_stop(TIMER_A0_BASE);
-                
-            //     // GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN6);
-            //     // export_data();
-            //     uint16_t total_len = buf_ptr - &export_buf[active_buf_idx][0];
-            //     if (total_len > 0 && total_len < (LOG_SIZE * ENTRY_STR_MAX)) {
-            //         DMA0CTL &= ~DMAEN; // 先關閉，確保重置狀態機
-                    
-            //         __data20_write_long((unsigned long)&DMA0SA, (unsigned long)&export_buf[active_buf_idx][0]);
-            //         DMA0SZ = total_len; 
-                    
-            //         DMA0CTL |= DMAEN;  // 重新開啟
-            //         DMA0CTL |= DMAREQ; // 【關鍵】軟體手動觸發第一次搬移，啟動連鎖反應
-            //     }
+            if (rocket_launched == 1) {
+                // ==========================================
+                // 【發射前：地面待機模式】
+                // ==========================================
+                // 1. 只算高度，不存檔，不影響 write_index
+                UART_print("Calibrating Ground...\r\n");
+    
+                float sum_alt = 0;
+                char calibration_buf[64];
+                int i;
+                // char cur_alt_buf[64];
+                for(i = 0; i<10; i++) {
+                    uint32_t d1 = ms5607_get_raw(CMD_CONV_D1);
+                    uint32_t d2 = ms5607_get_raw(CMD_CONV_D2);
+                    sum_alt += calculate_only_msl(d1, d2);
 
-            //     active_buf_idx = !active_buf_idx;
-            //     buf_ptr = &export_buf[active_buf_idx][0];
-            //     write_index = 0;
-            //     GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                    __delay_cycles(80000);
+                }
+                ground_alt = sum_alt/10.0f;
+                sprintf(calibration_buf, "Current Altitude: %.2f m\r\n", (double)ground_alt);
+                UART_print(calibration_buf); 
+                __delay_cycles(80000);
+                // 2. 透過 UART 回報給地面站，確認感測器與相對高度正常
+                // char buf[64];
+                // sprintf(buf, "Pre-Launch Rel Alt: %.2f m\r\n", (double)rel_alt);
+                // UART_print(buf);
+
+            } else { // rocket_launched == 0
+                calculate_and_log(D1, D2);
+            
+                uint16_t current_idx = (write_index == 0) ? 99 : (write_index - 1);
+                uint16_t prev_idx = (current_idx == 0) ? 99 : (current_idx - 1);
+                double rel_alt = (double)altimeter_log[current_idx].altitude - (double)ground_alt;
                 
-            //     // GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                // speed calculation
+                double speed = 0.0;
                 
-            //     // Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_UP_MODE);
-            // }
+                if (altimeter_log[current_idx].timestamp > altimeter_log[prev_idx].timestamp) {
+                    double delta_alt = (double)altimeter_log[current_idx].altitude - (double)altimeter_log[prev_idx].altitude;
+                    uint32_t delta_ticks = altimeter_log[current_idx].timestamp - altimeter_log[prev_idx].timestamp;
+                    double delta_time = (double)delta_ticks * 0.1;
+                    double raw_speed = delta_alt / delta_time;
+
+                    speed_history[speed_idx] = raw_speed;
+                    speed_idx = (speed_idx + 1) % SPEED_WINDOW;
+
+                    if (speed_count < SPEED_WINDOW) {
+                        speed_count++;
+                    }
+                    double sum = 0.0;
+                    
+                    int i;
+                    for (i = 0; i < speed_count; i++) {
+                        sum += speed_history[i];
+                    }
+                    filtered_speed = sum / speed_count;
+                }
+
+                // ==========================================
+                // [副傘邏輯]
+                // ==========================================
+                // 1. 如果時間超過 20sec 且速度小於等於 20m/s，發送開副傘訊號
+                // 2. check relay_1_stat == 1?
+                // 3. 如果時間超過 25sec relay_1_stat 不等於 1，go 1.
+                // 4. 如果時間超過 27sec relay_1_stat 不等於 1，發送主傘開傘訊號
+                
+                uint8_t relay_1_stat = GPIO_getInputPinValue(GPIO_PORT_P1, GPIO_PIN5);
+                uint8_t relay_2_stat = GPIO_getInputPinValue(GPIO_PORT_P4, GPIO_PIN3);
+
+                if (global_tick >= 200 && global_tick < 270 && filtered_speed <= 20 && relay_1_stat == GPIO_INPUT_PIN_LOW) { // 1 tick = 100ms, 20sec = 20000ms = 200 ticks
+                    GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN0);
+                    // GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                }
+                else if (global_tick >= 250 && relay_1_stat == GPIO_INPUT_PIN_LOW) { // send signal again if relay_1_stat != 1
+                    GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN0);
+                    // GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                }
+                else if (global_tick >270 && relay_1_stat == GPIO_INPUT_PIN_LOW) { // start main parachute logic
+                    if (rel_alt <= 450 && relay_2_stat == GPIO_INPUT_PIN_LOW) {
+                        GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN4);
+                        // GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                    }
+                }
+                // ==========================================   
+                // [主傘邏輯]
+                // ==========================================
+                // 1. rel_alt <= 450 && direction = 1(downward)，發送主傘開傘訊號
+                // 2. check relay_2_stat
+                // 3. after 1 sec? 500ms? send go 1.
+
+                if (rel_alt <= 450 && global_tick > 270 && relay_2_stat == GPIO_INPUT_PIN_LOW) {
+                    GPIO_setOutputHighOnPin(GPIO_PORT_P3, GPIO_PIN4);
+                    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                }
+                
+                char buf[64];
+                sprintf(buf, "AAA, %lu, %.2f, %.2f, %.2f, %.2f, %.2f\r\n", 
+                    (unsigned long)altimeter_log[current_idx].timestamp,
+                    filtered_speed,
+                    (double)altimeter_log[current_idx].pressure,
+                    (double)altimeter_log[current_idx].altitude,
+                    rel_alt,
+                    (double)altimeter_log[current_idx].temperature);
+                UART_print(buf);
+                
+                if(write_index >= 100) {
+                    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                    write_index = 0;
+                    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN6);
+                }
+
+            }
         }
     }
 }
@@ -210,44 +308,19 @@ void check_fram_integrity(void) {
         }
     }
 }
-// --- DMA init ---
-void dma_init() {
-    // 設置 DMA 觸發源為 EUSCI_A0 的 TX 標記 (UCA0TXIFG)
-    // DMA_initParam dmaParam = {0};
-    // dmaParam.channelSelect = DMA_CHANNEL_0;
-    // dmaParam.transferModeSelect = DMA_TRANSFER_SINGLE; // 每次觸發傳一個 Byte
-    // dmaParam.triggerSourceSelect = DMA_TRIGGERSOURCE_14; // EUSCI_A0 TX 觸發
-    // dmaParam.transferUnitSelect = DMA_SIZE_SRCBYTE_DSTBYTE;
-    // dmaParam.triggerTypeSelect = DMA_TRIGGER_RISINGEDGE;
-    // DMA_init(&dmaParam);
 
-    // // 設置源地址 (你的緩衝區) 與 目標地址 (UART TX 暫存器)
-    // DMA_setSrcAddress(DMA_CHANNEL_0, EUSCI_A_UART_getTransmitBufferAddress(EUSCI_A0_BASE), DMA_DIRECTION_UNCHANGED);
-
-    DMACTL0 = DMA0TSEL_14;
-    DMA0CTL = DMADT_0 | DMASBDB | DMASRCINCR_3 | DMADSTINCR_0 | DMALEVEL;
-    __data20_write_long((unsigned long)&DMA0DA, (unsigned long)&UCA0TXBUF);
-
-    UART_print("--- DMA INIT FINISHED ---\r\n");
-}
 // --- SPI 與 系統初始化 ---
 void system_init() {
     // Clock: 8MHz
     CS_setDCOFreq(CS_DCORSEL_0, CS_DCOFSEL_6);
     CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
-
-    // GPIO SPI: P1.6(MOSI), P1.7(MISO), P2.2(CLK)
-    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN6 | GPIO_PIN7, GPIO_SECONDARY_MODULE_FUNCTION);
-    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN2, GPIO_SECONDARY_MODULE_FUNCTION);
-
-    // CS Pin: P1.3
-    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN3);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN3); // set high 就是初始化，要使用該通道的時候會把電壓壓低
-
+    
+    // -----------------------------------
+    // eUSCI_A0 (UART)
+    // -----------------------------------
     // GPIO UART: P2.0(TXD), P2.1(RXD)
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN0, GPIO_SECONDARY_MODULE_FUNCTION);
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN1, GPIO_SECONDARY_MODULE_FUNCTION);
-
     // EUSCI_A0 UART 初始化
     // 針對 8MHz SMCLK, 設定 115200 Baudrate 的官方參數
     EUSCI_A_UART_initParam uartParam = {0};
@@ -257,18 +330,30 @@ void system_init() {
     uartParam.firstModReg = 5;
     uartParam.secondModReg = 0x55;
     uartParam.overSampling = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;
-
     if (STATUS_FAIL == EUSCI_A_UART_init(EUSCI_A0_BASE, &uartParam)) return;
     EUSCI_A_UART_enable(EUSCI_A0_BASE);
     
+    // Enable UART RX interrupt for space bar detection
+    EUSCI_A_UART_clearInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    EUSCI_A_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+
     UART_print("--- UART INIT FINISHED ---\r\n");
-    UART_print("--- GPIO INIT FINISHED ---\r\n");
+    
+    // -----------------------------------
+    // eUSCI_B0 (SPI_1) -> 給高度計 MS5607
+    // -----------------------------------
+    // GPIO SPI: P1.6(MOSI), P1.7(MISO), P2.2(CLK)
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN6 | GPIO_PIN7, GPIO_SECONDARY_MODULE_FUNCTION);
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN2, GPIO_SECONDARY_MODULE_FUNCTION);
+    // CS Pin: P1.3
+    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN3);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN3); // set high 就是初始化，要使用該通道的時候會把電壓壓低
     // EUSCI_B0 SPI 初始化
     EUSCI_B_SPI_initMasterParam spiParam = {0};
     spiParam.selectClockSource = EUSCI_B_SPI_CLOCKSOURCE_SMCLK;
     spiParam.clockSourceFrequency = 8000000;
-    // spiParam.desiredSpiClock = 1000000; // 1MHz
-    spiParam.desiredSpiClock = 100000;
+    spiParam.desiredSpiClock = 1000000; // 1MHz
+    // spiParam.desiredSpiClock = 100000;
     spiParam.msbFirst = EUSCI_B_SPI_MSB_FIRST;
     // spiParam.clockPhase = EUSCI_B_SPI_PHASE_DATA_CHANGED_ONFIRST_CAPTURED_ON_NEXT;
     spiParam.clockPhase = EUSCI_B_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT;
@@ -276,10 +361,40 @@ void system_init() {
     spiParam.spiMode = EUSCI_B_SPI_3PIN;
     EUSCI_B_SPI_initMaster(EUSCI_B0_BASE, &spiParam);
     EUSCI_B_SPI_enable(EUSCI_B0_BASE);
-    UART_print("--- SPI INIT FINISHED ---\r\n");
+    UART_print("--- SPI_1 INIT FINISHED ---\r\n");
+
+    // -----------------------------------
+    // eUSCI_A1 (SPI_2) -> 給SD card
+    // -----------------------------------
+    // GPIO SPI: P2.4 (SCLK_2), P2.5 (MOSI_2), P2.6 (MISO_2)
+    GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P2, GPIO_PIN4 | GPIO_PIN5 | GPIO_PIN6, GPIO_SECONDARY_MODULE_FUNCTION);
+    // CS Pin: P1.4
+    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN4); // set high 就是初始化，要使用該通道的時候會把電壓壓低
+    // EUSCI_A1 SPI 初始化
+    // EUSCI_A_SPI_initMasterParam paramA1 = {0};
+    paramA1.selectClockSource = EUSCI_A_SPI_CLOCKSOURCE_SMCLK; // 使用 SMCLK (8MHz)
+    paramA1.clockSourceFrequency = 8000000;
+    paramA1.desiredSpiClock = 400000;                          // 關鍵：SD卡初始化必須先跑 400kHz 低速！
+    paramA1.msbFirst = EUSCI_A_SPI_MSB_FIRST;
+    paramA1.clockPhase = EUSCI_A_SPI_PHASE_DATA_CAPTURED_ONFIRST_CHANGED_ON_NEXT;
+    paramA1.clockPolarity = EUSCI_A_SPI_CLOCKPOLARITY_INACTIVITY_LOW;
+    paramA1.spiMode = EUSCI_A_SPI_3PIN;                        // 3Pin 模式
+    EUSCI_A_SPI_initMaster(EUSCI_A1_BASE, &paramA1);
+    EUSCI_A_SPI_enable(EUSCI_A1_BASE);                         // 實體啟用 SD卡 SPI
+    UART_print("--- SPI_2 INIT FINISHED ---\r\n");
     
-    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN2);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN2);
+    
+    // setup P3.0 as output pin
+    GPIO_setAsOutputPin(GPIO_PORT_P3, GPIO_PIN0);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P3, GPIO_PIN0);
+    // setup P3.4 as output pin
+    GPIO_setAsOutputPin(GPIO_PORT_P3, GPIO_PIN4);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P3, GPIO_PIN4);
+    // setup P1.5 as input pin
+    GPIO_setAsInputPin(GPIO_PORT_P1, GPIO_PIN5);
+    // setup P4.3 as input pin
+    GPIO_setAsInputPin(GPIO_PORT_P4, GPIO_PIN3);
     UART_print("--- RELAYER INIT FINISHED ---\r\n");
 }
 
@@ -298,7 +413,8 @@ uint32_t ms5607_get_raw(uint8_t conv_cmd) {
     spi_xfer(conv_cmd);
     GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN3);
     
-    __delay_cycles(24000); // OSR 1024 延時約 3ms
+    // __delay_cycles(24000); // OSR 1024 延時約 3ms
+    __delay_cycles(80000);
 
     // 2. 讀取結果
     GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN3);
@@ -314,12 +430,16 @@ uint32_t ms5607_get_raw(uint8_t conv_cmd) {
 void ms5607_read_prom() {
     int i;
     for (i = 0; i < 8; i++) {
-        GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN3);
-        spi_xfer(CMD_PROM_RD + (i * 2));
+        GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN3); // CSB Low
+        
+        spi_xfer(CMD_PROM_RD | (i << 1)); 
+        
         uint8_t h = spi_xfer(0x00);
         uint8_t l = spi_xfer(0x00);
-        ms5607_coeffs[i] = (h << 8) | l;
-        GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN3);
+        
+        ms5607_coeffs[i] = (uint16_t)((h << 8) | l);
+        
+        GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN3); // CSB High
     }
 }
 
@@ -406,13 +526,16 @@ void calculate_and_log(uint32_t D1, uint32_t D2) {
     // int32_t P = (((D1 * SENS) >> 21) - OFF) >> 15;
 
     float pressure_hpa = P / 100.0f;
-    float altitude = 44330.0f * (1.0f - powf(pressure_hpa / 1013.25f, 0.190295f));
+    float filtered_pressure = smooth_pressure(pressure_hpa);
+    float altitude = 44330.0f * (1.0f - powf(filtered_pressure / 1013.25f, 0.190295f));
+
+    float temp = TEMP / 100.0f;
 
     // 2. 封裝存檔
     altimeter_log[write_index].timestamp = global_tick; // 建議接 RTC 或 Global Tick
-    altimeter_log[write_index].pressure = pressure_hpa;
+    altimeter_log[write_index].pressure = filtered_pressure;
     altimeter_log[write_index].altitude = altitude;
-    altimeter_log[write_index].temperature = (uint16_t)TEMP;
+    altimeter_log[write_index].temperature = temp;
 
     // char buf[100];
     // sprintf(buf, "%lu,%.2f,%.2f,%u\r\n", 
@@ -425,6 +548,17 @@ void calculate_and_log(uint32_t D1, uint32_t D2) {
     write_index++;
 }
 
+float smooth_pressure(float pressure) {
+    pressure_history[pressure_idx] = pressure;
+    pressure_idx = (pressure_idx + 1) % PRESSURE_WINDOW;
+    double sum = 0.0;
+    int i;
+    for(i = 0; i < PRESSURE_WINDOW; i++) {
+        sum += pressure_history[i];
+    }
+    return sum / PRESSURE_WINDOW;
+}
+
 void UART_print(char* s) {
     while(*s) {
         // 使用 DriverLib 的方式發送資料
@@ -435,34 +569,126 @@ void UART_print(char* s) {
     }
 }
 
-void export_data(void) {
-    char buf[64];
-    uint16_t i;
-
-    // 傳送 CSV 表頭，方便電腦識別
-    UART_print("\r\n--- START OF LOG ---\r\n");
-    UART_print("Time,Pressure(hPa),Altitude(m),Temp(C*100)\r\n");
-
-    for (i = 0; i < 100; i++) {
-        // 將每一筆 LogEntry 轉換成 CSV 格式
-        // 注意：MSP430 的 printf 預設可能不支援 float，
-        // 若高度噴不出來，請檢查 CCS 的 printf support 設定 (設為 full)
-        sprintf(buf, "%lu,%.2f,%.2f,%u\r\n", 
-                altimeter_log[i].timestamp,
-                altimeter_log[i].pressure,
-                altimeter_log[i].altitude,
-                altimeter_log[i].temperature);
-        UART_print(buf);
-    }
+void flush_log_to_sd(void) {
+    char buf[128];
+    int i;
     
-    UART_print("--- END OF LOG ---\r\n");
+    // 1. 打開或建立檔案 (檔名為 FLIGHT.CSV)
+    // FA_WRITE: 允許寫入 | FA_OPEN_APPEND: 從檔案尾端繼續寫 (不會覆蓋舊資料)
+    g_res = f_open(&g_file, "0:FLIGHT.CSV", FA_WRITE | FA_OPEN_APPEND);
+    
+    if (g_res == FR_OK) {
+        // 如果是全新檔案，可以先寫入 CSV 表頭 
+        if (f_size(&g_file) == 0) {
+            char* header = "Redundency, TimeStamp, Pressure(hPa),Altitude(m),Temp(C)\r\n";
+            f_write(&g_file, header, strlen(header), &bytes_written);
+        }
+
+        // 2. 迴圈將 100 筆資料轉成字串並寫入
+        for (i = 0; i < 100; i++) {
+            // 注意：FR5969 SRAM 極小，我們逐行格式化並寫入，FatFs 底層會自動幫我們湊滿 512 bytes 才物理推入 SD 卡
+            sprintf(buf, "%lu,%.2f,%.2f,%u\r\n", 
+                (unsigned long)altimeter_log[i].timestamp,
+                (double)altimeter_log[i].pressure,
+                (double)altimeter_log[i].altitude,
+                (unsigned int)altimeter_log[i].temperature);
+            
+            f_write(&g_file, buf, strlen(buf), &bytes_written);
+        }
+        
+        // 3. 🚀 火箭保命關鍵：強制同步 (Sync) 
+        // f_sync 會將 FatFs 緩衝區內的資料強制寫入實體 SD 卡，更新檔案大小。
+        // 如果火箭摔壞斷電，只要有 Sync 過，先前的資料就絕對救得回來！
+        f_sync(&g_file); 
+        
+        // 4. 關閉檔案
+        f_close(&g_file);
+        
+        UART_print("--- SD Card Write 100 Records OK ---\r\n");
+    } else {
+        UART_print("--- SD Card Open FAILED! ---\r\n");
+    }
 }
+
+// void start_dma_transfer(unsigned char* source_buffer, unsigned int data_size) {
+    
+//     DMA0CTL &= ~DMAEN;  // 1. 安全守則：先關閉 DMA 才能安全改寫內部參數
+    
+//     // 2. 動態灌入這一次的來源位址 (例如你的 FRAM 陣列名稱)
+//     __data16_write_addr((unsigned short)&DMA0SA, (unsigned long)source_buffer);
+    
+//     // 3. 動態灌入這一次要搬移的總大小 (例如 SD 卡的一個區塊就是 512)
+//     DMA0SZ = data_size;
+    
+//     // 4. 開啟點火開關！讓 DMA 進入待命狀態，週邊一空出來就會自動連噴
+//     DMA0CTL |= DMAEN;
+// }
 
 // --- 中斷服務 ---
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt void Timer_A0_ISR(void) {
-    GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
-    timer_triggered = 1;
-    global_tick++;
-    __bic_SR_register_on_exit(LPM0_bits); // 喚醒 CPU
+    // 加入 sub_tick 來追蹤 20ms 的次數
+    static uint8_t sub_tick = 0; 
+    
+    // 1. 空白鍵超時控制 (每 20ms 執行一次)
+    if (space_bar_timeout > 0) {
+        space_bar_timeout--;
+        
+        // 倒數結束，代表使用者放開了空白鍵
+        if (space_bar_timeout == 0) {
+            GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN2); // 關閉繼電器 (馬達斷電)
+            in_repeat_mode = 0;                              // 退出連發模式
+        }
+    }
+    
+    // 2. 主程式取樣邏輯 (每 5 次 sub_tick = 100ms 才執行一次)
+    if (++sub_tick >= 5) {
+        sub_tick = 0; // 重置計數器
+        
+        GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0); // 閃爍綠燈，代表系統仍在運作
+        timer_triggered = 1;                             // 告訴主迴圈該取樣了
+        
+        if (rocket_launched == 0) {
+            global_tick++; 
+        }
+        
+        __bic_SR_register_on_exit(LPM0_bits);            // 喚醒 CPU 執行 main loop
+    }
+}
+
+#pragma vector = USCI_A0_VECTOR
+__interrupt void USCI_A0_ISR(void) {
+    switch(__even_in_range(UCA0IV, USCI_UART_UCTXCPTIFG)) {
+        case USCI_NONE: break;
+        case USCI_UART_UCRXIFG: {
+            uint8_t rx_val = EUSCI_A_UART_receiveData(EUSCI_A0_BASE);
+            
+            if (rx_val == ' ') { // 偵測到空白鍵被按下
+                GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN2); // 立即開啟繼電器
+                
+                // 如果在超時前又收到字元，代表我們成功跨過了 OS 的初始延遲，進入連發狀態
+                if (space_bar_timeout > 0) {
+                    in_repeat_mode = 1; 
+                }
+
+                // 根據狀態設定不同的超時閾值
+                if (in_repeat_mode) {
+                    // 連發模式：極高靈敏度，只要 80ms 沒收到訊號就斷電 (4 * 20ms)
+                    // 連發模式：放寬到 15 滴答 (300ms)(15 * 20ms)
+                    space_bar_timeout = 15; 
+                } else {
+                    // 第一次按下：給予較長的寬容值，等待 OS 的連發訊號到來 (35 * 20ms = 700ms)
+                    space_bar_timeout = 35; 
+                }
+            }
+            if (rx_val == '0') {  // 偵測到 FPGA 傳來的 "發射" 訊號
+                rocket_launched = 0; 
+                UART_print("--- IGNITION! FLIGHT MODE ENGAGED ---\r\n");
+            }
+            break;
+        }
+        case USCI_UART_UCTXIFG: break;
+        case USCI_UART_UCSTTIFG: break;
+        case USCI_UART_UCTXCPTIFG: break;
+    }
 }
