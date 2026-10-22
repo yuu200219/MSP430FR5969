@@ -44,9 +44,9 @@ Driven by a non-blocking state machine (`cycle_tick`) inside the **10ms Timer IS
 
 - **Step 2: Signal Processing & Calculations**
   - **MS5607 Compensation**: Computes 2nd-order temperature-compensated pressure ($P$) and altitude ($H$).
-  - **Relative Altitude**: Evaluates $\text{rel_alt} = H - \text{ground_alt}$.
+  - **Relative Altitude**: Evaluates `rel_alt`$ = H -$ `ground_alt`.
   - **Velocity Estimation**: Calculates vertical velocity ($\Delta H / \Delta t$) smoothed through a 5-sample moving average window (`filtered_speed`).
-  - **Altitude Voting Filter**: Maintains a 10-sample window for $\text{rel_alt} \le 450\text{ m}$ validation.
+  - **Altitude Voting Filter**: Maintains a 10-sample window for `rel_alt`$ \le$ 450m validation.
 
 - **Step 3: Double-Buffered Storage & Telemetry Broadcast**
   - **FRAM Double Buffering**: Writes timestamp, pressure, altitude, and temperature into `altimeter_log[active_buf][write_index]`.
@@ -58,6 +58,6 @@ Driven by a non-blocking state machine (`cycle_tick`) inside the **10ms Timer IS
     - **Condition**: Flight time between 20s and 25s (`200 <= global_tick < 250`), `filtered_speed` $\le 40\text{ m/s}$, and not previously triggered.
     - **Action**: Drives `P3.0` HIGH and sets `parachute_pulse_timer = 350` (**3.5-second pulse**).
   - **Main Parachute Trigger**:
-    - **Condition**: Flight time exceeds 80s (`global_tick > 800`), at least 8 of the last 10 samples report $\text{rel\_alt} \le 450\text{ m}$, and not previously triggered.
+    - **Condition**: Flight time exceeds 80s (`global_tick > 800`), at least 8 of the last 10 samples report `rel_alt` $ \le 450\text{ m}$, and not previously triggered.
     - **Action**: Drives `P3.4` HIGH and sets `parachute_pulse_timer = 1000` (**10-second pulse**).
   - **Safety Auto-Cutoff**: Decrements `parachute_pulse_timer` every 10ms. When it reaches zero, automatically pulls `P3.0` (and `P3.4`) LOW to prevent coil burn/battery drain.
