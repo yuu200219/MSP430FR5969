@@ -44,9 +44,9 @@ Driven by a non-blocking state machine (`cycle_tick`) inside the **10ms Timer IS
 
 - **Step 2: Signal Processing & Calculations**
   - **MS5607 Compensation**: Computes 2nd-order temperature-compensated pressure ($P$) and altitude ($H$).
-  - **Relative Altitude**: Evaluates $\text{rel\_alt} = H - \text{ground\_alt}$.
+  - **Relative Altitude**: Evaluates $\text{rel_alt} = H - \text{ground_alt}$.
   - **Velocity Estimation**: Calculates vertical velocity ($\Delta H / \Delta t$) smoothed through a 5-sample moving average window (`filtered_speed`).
-  - **Altitude Voting Filter**: Maintains a 10-sample window for $\text{rel\_alt} \le 450\text{ m}$ validation.
+  - **Altitude Voting Filter**: Maintains a 10-sample window for $\text{rel_alt} \le 450\text{ m}$ validation.
 
 - **Step 3: Double-Buffered Storage & Telemetry Broadcast**
   - **FRAM Double Buffering**: Writes timestamp, pressure, altitude, and temperature into `altimeter_log[active_buf][write_index]`.
