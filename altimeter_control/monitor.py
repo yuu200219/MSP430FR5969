@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # ================= 設定區 =================
-COM_PORT = '/dev/cu.usbmodem11403'      # 每次要跑之前都要先確認是多少
+COM_PORT = '/dev/cu.usbmodem1303'      # 每次要跑之前都要先確認是多少
 BAUD_RATE = 115200                      # 必須跟 MSP430 的設定一模一樣
 CSV_FILENAME = 'rocket_flight_log.csv'
 IMAGE_FILENAME = 'rocket_flight.png'

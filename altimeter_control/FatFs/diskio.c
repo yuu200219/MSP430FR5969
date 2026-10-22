@@ -49,18 +49,28 @@ static BYTE CardType;			/* Card type flags */
 /*-----------------------------------------------------------------------*/
 /* SPI Controls (Platform dependent)                                     */
 /*-----------------------------------------------------------------------*/
-
+#define SPI_TIMEOUT 10000
 static void xmit_spi (BYTE dat)
 {
+    uint32_t timeout = SPI_TIMEOUT;
     EUSCI_A_SPI_transmitData(EUSCI_A1_BASE, dat);
-    while (EUSCI_A_SPI_isBusy(EUSCI_A1_BASE));
+    while (EUSCI_A_SPI_isBusy(EUSCI_A1_BASE)) {
+        if (--timeout == 0) {
+            return; 
+        }
+    }
     EUSCI_A_SPI_receiveData(EUSCI_A1_BASE); // Dummy read to clear IFG
 }
 
 static BYTE rcvr_spi (void)
 {
+    uint32_t timeout = SPI_TIMEOUT;
     EUSCI_A_SPI_transmitData(EUSCI_A1_BASE, 0xFF);
-    while (EUSCI_A_SPI_isBusy(EUSCI_A1_BASE));
+    while (EUSCI_A_SPI_isBusy(EUSCI_A1_BASE)) {
+        if (--timeout == 0) {
+            return 0xFF; 
+        }
+    }
     return EUSCI_A_SPI_receiveData(EUSCI_A1_BASE);
 }
 
@@ -254,7 +264,7 @@ DSTATUS disk_initialize (
     if (pdrv != DEV_MMC) return STA_NOINIT;
 
     deselect();
-    for (n = 10; n; n--) rcvr_spi();	/* 80 dummy clocks */
+    for (n = 100; n; n--) rcvr_spi();	/* 80 dummy clocks */
 
     ty = 0;
     if (send_cmd(CMD0, 0) == 1) {			/* Put the card SPI mode */
@@ -363,6 +373,36 @@ DRESULT disk_write (
 
     return count ? RES_ERROR : RES_OK;
 }
+
+// DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count) {
+//     // 這裡我們假設 SD 卡已經完成初始化並進入 Data Token 階段
+//     // 啟動 DMA 通道 (假設使用 DMA_CHANNEL_1)
+//     DMA_setSrcAddress(DMA_CHANNEL_1, (uint32_t)buff, DMA_DIRECTION_INCREMENT);
+//     DMA_setDstAddress(DMA_CHANNEL_1, EUSCI_A_SPI_getTransmitBufferAddress(EUSCI_A1_BASE), DMA_DIRECTION_UNCHANGED);
+    
+//     // 傳送一個 Block (512 bytes)
+//     DMA_setTransferSize(DMA_CHANNEL_1, 512); 
+//     DMA_enableTransfers(DMA_CHANNEL_1);
+//     // 啟動 SPI 的第一次觸發 (必須手動丟一個 Dummy byte 讓 TX 空出來，DMA 才會開始工作)
+//     EUSCI_A_SPI_transmitData(EUSCI_A1_BASE, 0xFF);
+
+//     while ((DMA_getInterruptStatus(DMA_CHANNEL_1) & DMA_getInterruptStatusString(DMA_CHANNEL_1)) == 0);
+//     DMA_clearInterrupt(DMA_CHANNEL_1);
+
+//     while (EUSCI_A_SPI_isBusy(EUSCI_A1_BASE));
+
+//     while (GPIO_getInputPinValue(GPIO_PORT_P2, GPIO_PIN6) == GPIO_INPUT_PIN_LOW) {
+//         // 原地等待 SD 卡內部的 Flash 燒錄完成
+//     }
+
+//     // 為了相容 FatFs，這裡建議使用「等待中斷」機制
+//     __bis_SR_register(LPM0_bits | GIE); // CPU 睡覺，由 DMA 中斷喚醒
+
+//     // while ((DMA_getInterruptStatus(DMA_CHANNEL_1) & DMAIV_DMA1IFG) == 0);
+//     // DMA_clearInterrupt(DMA_CHANNEL_1);   
+    
+//     return RES_OK;
+// }
 
 #endif
 

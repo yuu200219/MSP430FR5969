@@ -1,0 +1,3 @@
+FatFs/ffunicode.obj: ../FatFs/ffunicode.c
+FatFs/ffunicode.obj: ../FatFs/ff.h
+FatFs/ffunicode.obj: ../FatFs/ffconf.h

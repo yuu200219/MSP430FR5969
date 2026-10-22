@@ -60,6 +60,11 @@ main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/i
 main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/machine/_limits.h
 main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdio.h
 main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdarg.h
+main.obj: /Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ff.h
+main.obj: /Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ffconf.h
+main.obj: /Users/yuu/workspace_ccstheia/altimeter_control/FatFs/diskio.h
+main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h
+main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h
 
 ../main.c:
 
@@ -180,4 +185,14 @@ main.obj: /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/i
 /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdio.h:
 
 /Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/stdarg.h:
+
+/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ff.h:
+
+/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/ffconf.h:
+
+/Users/yuu/workspace_ccstheia/altimeter_control/FatFs/diskio.h:
+
+/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h:
+
+/Applications/ti/ccs2040/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/xlocale/_string.h:
 
