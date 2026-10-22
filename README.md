@@ -12,46 +12,52 @@ You can get the basic information and regulation of the MSP430 in above link.
 - **Code Composer Studio**。
   https://www.ti.com/tool/CCSTUDIO
 ## System Architecture Overview
-### System Initialization
-- Disables the Watchdog Timer and configures system clock SMCLK at 8MHz.
-- Configures eUSCI_A0 (UART at 115200 Baud), eUSCI_B0 (SPI_1 for MS5607 sensor at 1MHz), and eUSCI_A1 (SPI_2 for SD Card at initial 400kHz).
-- Configures Timer_A0 to generate an interrupt every 20ms.
-- FRAM Integrity & Sensor Calibration
-- Storage Setup using `f_mount()`
-### Phase 1: Pre-Launch Standby
-- Trigger Rate: Driven by the 20ms ISR accumulator to wake the CPU every 100ms (10Hz).
-- Operations:
-  - Reads raw temperature ($D_2$) and pressure ($D_1$) 10 times in sequence to calculate Mean Sea Level (MSL) altitude.
-  - Averages these 10 samples to lock in the ground altitude reference (ground_alt).
-  - No FRAM/SD logging occurs during this phase to prevent buffer corruption or index drift prior to flight.
-  - Continuously monitors UART RX: when the ASCII character '0' (ignition command) is received, rocket_launched drops to 0, setting global_tick = 0 and launching Flight Mode.
-### Phase 2: Active Flight Operations (rocket_launched == 0)
-- Step 1: Raw Sensor Sampling
-  - Sends `CMD_CONV_D1` (OSR 4096) with an 80,000-cycle delay (~10ms) to read the 24-bit raw pressure value (`D_1`).
-  - Sends `CMD_CONV_D2` (OSR 4096) with an 80,000-cycle delay (~10ms) to read the 24-bit raw temperature value (`D_2`).
-- Step 2: Digital Signal Processing (some processing algo. according to MS5607 datasheet)
-- Step 3:Telemetry & FRAM Logging
-  - FRAM Buffer: Encapsulates `global_tick`, `filtered_pressure`, `altitude`, and `temperature` into a `LogEntry` structure and stores it in `altimeter_log[write_index]`. The buffer wraps around automatically every 100 entries.
-    ```=c
-    typedef struct {
-    
-        uint32_t timestamp;
-    
-        float pressure;
-    
-        float altitude;
-    
-        uint16_t temperature;
-    
-    } LogEntry;
-    ```
-  - UART Transmission: Formats and transmits live CSV telemetry (AAA, timestamp, speed, pressure, altitude, rel_alt, temp) at 115200 baud to the ground station.
-- Step 4: Parachute Deployment Decisions
-  - Drogue Parachute Trigger:
-    - Condition: Flight time is between 20s and 27s (200 <= global_tick < 270), filtered_speed $\le 20\text{ m/s}$, and Relay 1 feedback (P1.5) reports LOW.
-    - Action: Drives P3.0 HIGH to trigger the drogue parachute deployment channel.
-    - Fallback: If time exceeds 25s (global_tick >= 250) and Relay 1 has not actuated, re-asserts P3.0 HIGH.
-  - Main Parachute Trigger:
-    - Condition: Flight time exceeds 27s (global_tick > 270), rel_alt $\le 450\text{ m}$, and Relay 2 feedback (P4.3) reports LOW.
-    - Action: Drives P3.4 HIGH to activate the main parachute deployment line.
 
+### System Initialization
+- **Clock & Hardware**: Disables Watchdog Timer; configures SMCLK at 8MHz.
+- **Peripherals**:
+  - `eUSCI_A0`: UART at 115200 Baud (Telemetry broadcast).
+  - `eUSCI_B0`: SPI_1 for MS5607 Altimeter at 1MHz.
+  - `eUSCI_A1`: SPI_2 for SD Card (Initial 400kHz for initialization, then boosted to 4MHz/8MHz).
+  - `Timer_A0`: Configured for a **10ms (100Hz)** base hardware interrupt rate.
+- **FRAM Integrity & Calibration**: Verifies persistent magic number (`0xABCD`). If uninitialized, reads MS5607 PROM coefficients ($C_1 \dots C_6$) and saves them to FRAM.
+- **Storage Initialization**: Mounts FatFs filesystem using `f_mount()` and dynamically creates/opens the next sequential log file (e.g., `FL_00001.CSV`).
+
+---
+
+### Phase 1: Pre-Launch Standby (`rocket_launched == 1`)
+- **Execution**: Runs in the foreground upon boot.
+- **Ground Calibration**:
+  - Takes 10 sequential MS5607 samples (with 9ms conversion delays).
+  - Averages calculated MSL altitudes to set the reference ground altitude (`ground_alt`).
+- **Ignition Sensing**: Monitors UART RX for ASCII `'0'` (Ignition command from FPGA/Ground Station). Upon receipt, sets `rocket_launched = 0`, resets `global_tick = 0`, and engages Flight Mode.
+
+---
+
+### Phase 2: Active Flight Operations (`rocket_launched == 0`)
+Driven by a non-blocking state machine (`cycle_tick`) inside the **10ms Timer ISR**, executing a full sampling and decision cycle every **100ms (10Hz)**:
+
+- **Step 1: Non-blocking Sensor Sampling (MS5607)**
+  - **Cycle 0 (0ms)**: Sends pressure conversion command (`CMD_CONV_D1`, OSR 4096).
+  - **Cycle 1 (10ms)**: Reads 24-bit raw pressure ($D_1$) via SPI; sends temperature conversion command (`CMD_CONV_D2`, OSR 4096).
+  - **Cycle 2 (20ms)**: Reads 24-bit raw temperature ($D_2$) via SPI.
+
+- **Step 2: Signal Processing & Calculations**
+  - **MS5607 Compensation**: Computes 2nd-order temperature-compensated pressure ($P$) and altitude ($H$).
+  - **Relative Altitude**: Evaluates $\text{rel\_alt} = H - \text{ground\_alt}$.
+  - **Velocity Estimation**: Calculates vertical velocity ($\Delta H / \Delta t$) smoothed through a 5-sample moving average window (`filtered_speed`).
+  - **Altitude Voting Filter**: Maintains a 10-sample window for $\text{rel\_alt} \le 450\text{ m}$ validation.
+
+- **Step 3: Double-Buffered Storage & Telemetry Broadcast**
+  - **FRAM Double Buffering**: Writes timestamp, pressure, altitude, and temperature into `altimeter_log[active_buf][write_index]`.
+  - **SD Flush**: When a buffer fills 50 records (~5s), it toggles `active_buf` and flags the Main Loop to write the filled buffer to the SD card asynchronously.
+  - **UART Output**: Passes updated data to the Main Loop to transmit live CSV telemetry (`AAA, tick, speed, pressure, alt, rel_alt, temp`).
+
+- **Step 4: Parachute Deployment & Pulse Auto-Cutoff**
+  - **Drogue Parachute Trigger**:
+    - **Condition**: Flight time between 20s and 25s (`200 <= global_tick < 250`), `filtered_speed` $\le 40\text{ m/s}$, and not previously triggered.
+    - **Action**: Drives `P3.0` HIGH and sets `parachute_pulse_timer = 350` (**3.5-second pulse**).
+  - **Main Parachute Trigger**:
+    - **Condition**: Flight time exceeds 80s (`global_tick > 800`), at least 8 of the last 10 samples report $\text{rel\_alt} \le 450\text{ m}$, and not previously triggered.
+    - **Action**: Drives `P3.4` HIGH and sets `parachute_pulse_timer = 1000` (**10-second pulse**).
+  - **Safety Auto-Cutoff**: Decrements `parachute_pulse_timer` every 10ms. When it reaches zero, automatically pulls `P3.0` (and `P3.4`) LOW to prevent coil burn/battery drain.
